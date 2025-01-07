@@ -23,6 +23,9 @@ def save_api_key(key):
 
 def about(request):
     return render(request, 'ai_chat/about.html')
+
+def hom(request):
+    return render(request, 'ai_chat/home.html')
     """Handle the API key input from the user."""
 '''    if request.method == "POST":
         api_key = request.POST.get('api_key')
