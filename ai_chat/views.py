@@ -36,10 +36,12 @@ def about(request):
 @csrf_exempt  # Temporarily disable CSRF check for this view (for simplicity)
 def get_response(request):
     """Get response from the AI model."""
+    print("we are in")
     if request.method == 'POST':
         try:
             # Parse the JSON body
             data = json.loads(request.body)
+            print("we are in the body")
             print("Received Data:", data)  # Log the received data for debugging
             question = data.get('question', '').strip()
             print(f"Question provided: '{question}'")
@@ -80,5 +82,5 @@ def get_response(request):
 
 def home(request):
     """Render the main chat interface."""
-    form = ChatForm()  
+    form = ChatForm()
     return render(request, 'ai_chat/home.html', {'form': form})
