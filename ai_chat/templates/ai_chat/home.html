@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat Interface</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(120deg, #6a11cb, #2575fc);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            max-width: 600px;
+            width: 100%;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #6a11cb; /* Welcome font color changed */
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 50px; /* Smaller question box */
+            padding: 10px;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-bottom: 15px;
+            resize: none;
+        }
+
+        button {
+            background: #4CAF50;
+            color: #fff;
+            font-size: 1rem;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .response-container {
+            margin-bottom: 20px;
+            max-height: 150px; /* Set height for response box */
+            overflow-y: auto; /* Add scrollbar for long content */
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .response-container pre {
+            background: #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .response-container pre code {
+            font-family: 'Courier New', monospace;
+        }
+
+        .loading-message {
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        footer {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Pinaka AI</h1>
+
+        <div class="response-container" id="response-container" style="display: none;">
+            <h2>Response</h2>
+            <div id="response-text"></div>
+        </div>
+
+        <form id="chat-form" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" id="submit-button">Submit</button>
+            <span class="loading-message" id="loading-message" style="display: none;">Wait for response...</span>
+        </form>
+
+        <footer>
+            © 2025 Pinaka AI. All rights reserved. Design & Developed by <a href="{% url 'about' %}">Sourabh Dattalkar</a>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('chat-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const question = document.querySelector('textarea[name="question"]').value;
+            const loadingMessage = document.getElementById('loading-message');
+            const responseContainer = document.getElementById('response-container');
+            const responseText = document.getElementById('response-text');
+
+            // Show loading message
+            loadingMessage.style.display = 'inline';
+
+            fetch("{% url 'get_response' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ question: question })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.response) {
+                    responseContainer.style.display = 'block';
+                    responseText.innerHTML = formatResponse(data.response);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => console.log('Error:', error))
+            .finally(() => {
+                loadingMessage.style.display = 'none';
+            });
+        });
+
+        function formatResponse(response) {
+            let formattedResponse = response;
+
+            formattedResponse = formattedResponse.replace(/```python([\s\S]*?)```/g, (match, code) => {
+                return `<pre><code>${code.trim()}</code></pre>`;
+            });
+
+            formattedResponse = formattedResponse.replace(/```c([\s\S]*?)```/g, (match, code) => {
+                return `<pre><code>${code.trim()}</code></pre>`;
+            });
+
+            return formattedResponse;
+        }
+    </script>
+</body>
+</html>
